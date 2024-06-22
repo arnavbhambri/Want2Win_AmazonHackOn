@@ -6,7 +6,7 @@ Steps to run the project.
 2. run setup_db.py
 3. run app.py, n
 4. Open the specified port on your browser, localhost:port
-5. User ID<details and password mention kar do>
+5. User ID<U1 -> test>
 
 
 Arnav Bhambri, Anusha Arra, Ishan Parashar
