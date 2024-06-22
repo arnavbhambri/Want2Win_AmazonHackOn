@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Amazon Clone</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/register">Register</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/products">Products</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2 class="text-center">Products</h2>
+        <form action="{{ url_for('products') }}" method="POST" class="mb-5">
+            <div class="input-group">
+                <input type="text" name="search_value" class="form-control" placeholder="Search for products">
+                <div class="input-group-append">
+                    <button class="btn btn-secondary" type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+        <div class="row mt-4">
+            {% for product in products %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img src="{{ product.Img_Link }}" class="card-img-top" alt="{{ product.Product_Name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.Product_Name }}</h5>
+                        <p class="card-text">{{ product.About_Product }}</p>
+                        <p class="card-text"><strong>Category:</strong> {{ product.Category }}</p>
+                        <p class="card-text"><strong>Price:</strong> {{ product.Discounted_Price }} ({{ product.Actual_Price }})</p>
+                        <p class="card-text"><strong>Discount:</strong> {{ product.Discount_Percentage }}</p>
+                        <p class="card-text"><strong>Rating:</strong> {{ product.Rating }} ({{ product.Rating_Count }} reviews)</p>
+                        <a href="{{ url_for('review_product', product_id=product.Product_ID) }}" class="btn btn-primary">Review</a>
+                        <a href="{{ url_for('return_form', product_id=product.Product_ID) }}" class="btn btn-danger">Return</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

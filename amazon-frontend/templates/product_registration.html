@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Registration</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Seller Portal</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('products') }}">Products</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="{{ url_for('product_registration') }}">Upload Product</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2 class="text-center">Product Registration</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-info" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <form method="post" action="{{ url_for('product_registration') }}" id="productForm">
+            <div class="form-group">
+                <label for="product_id">Product ID</label>
+                <input type="number" class="form-control" id="product_id" name="product_id" required>
+            </div>
+            <div class="form-group">
+                <label for="product_name">Product Name</label>
+                <input type="text" class="form-control" id="product_name" name="product_name" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <input type="text" class="form-control" id="category" name="category" required>
+            </div>
+            <div class="form-group">
+                <label for="discounted_price">Discounted Price</label>
+                <input type="text" class="form-control" id="discounted_price" name="discounted_price" required>
+            </div>
+            <div class="form-group">
+                <label for="actual_price">Actual Price</label>
+                <input type="text" class="form-control" id="actual_price" name="actual_price" required>
+            </div>
+            <div class="form-group">
+                <label for="about_product">About Product</label>
+                <textarea class="form-control" id="about_product" name="about_product" rows="3" required></textarea>
+                <button type="button" class="btn btn-secondary mt-2" id="checkSimilarity">Check Similarity</button>
+                <div id="similarityResult" class="mt-2"></div>
+            </div>
+            <div class="form-group">
+                <label for="img_link">Image Link</label>
+                <input type="url" class="form-control" id="img_link" name="img_link" required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="submitButton" disabled>Register Product</button>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#checkSimilarity').click(function() {
+                var aboutProduct = $('#about_product').val();
+                $.ajax({
+                    url: '/check_similarity',
+                    method: 'POST',
+                    data: { about_product: aboutProduct },
+                    success: function(response) {
+                        $('#similarityResult').html(response.result.replace(/\n/g, '<br>'));
+                        if (!response.is_too_similar) {
+                            $('#submitButton').prop('disabled', false);
+                        } else {
+                            $('#submitButton').prop('disabled', true);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

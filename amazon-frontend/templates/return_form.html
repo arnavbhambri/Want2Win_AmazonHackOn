@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counterfeit Return Form</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Return Database</h1>
+        <form method="POST" action="">
+            <div class="form-group">
+                <label for="user_id">User ID:</label>
+                <input type="text" class="form-control" id="user_id" name="user_id" value="{{ user_id }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="shipment_id">Shipment ID:</label>
+                <input type="text" class="form-control" id="shipment_id" name="shipment_id" value="{{ shipment.Shipment_ID }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="product_id">Product Name:</label>
+                <input type="text" class="form-control" id="Product_Name" name="Product_Name" value="{{ product.Product_Name }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="reason">Reason of Return:</label>
+                <textarea class="form-control" id="reason" name="reason" required></textarea>
+            </div>
+            <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" id="counterfeit" name="counterfeit">
+                <label class="form-check-label" for="counterfeit">Counterfeit</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <a href="{{ url_for('products') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
