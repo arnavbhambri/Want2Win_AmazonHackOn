@@ -463,7 +463,7 @@ def generate_graph():
     graph_html = net.generate_html()
      
     graph_with_title = f"""
-    <h2 style="text-align: center;">Counterfeiting Hotspots based on our Algorithm</h2>
+    <h2 style="text-align: center;">Top 10 Counterfeiting Hotspots</h2>
     {graph_html}
     """
     return render_template('show_graph.html', graph_html=graph_with_title)
