@@ -5,6 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Submit Review</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background: url('https://source.unsplash.com/1600x900/?product') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin-top: 50px;
+            color: #fff;
+        }
+        h2 {
+            color: #f90;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 20px;
+        }
+        .card-title {
+            color: #f90;
+            font-weight: bold;
+        }
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+        .btn-primary {
+            background-color: #f90;
+            border-color: #f90;
+        }
+        .btn-primary:hover {
+            background-color: #fff;
+            color: #f90;
+        }
+        .alert {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
@@ -47,6 +93,7 @@
                 <textarea class="form-control" id="review_text" name="review_text" rows="4" required>{{ existing_review['review_text'] if existing_review else '' }}</textarea>
             </div>
             <button type="submit" class="btn btn-primary">Submit Review</button>
+            <a href="{{ url_for('products') }}" class="btn btn-secondary">Back</a>
         </form>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

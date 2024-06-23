@@ -5,10 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Counterfeit Return Form</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: url('https://source.unsplash.com/1600x900/?product') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin-top: 50px;
+            color: #fff;
+        }
+        h1 {
+            color: #f90;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+        }
+        label {
+            color: #f90;
+        }
+        .btn-primary {
+            background-color: #f90;
+            border-color: #f90;
+        }
+        .btn-primary:hover {
+            background-color: #fff;
+            color: #f90;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
-        <h1>Return Database</h1>
+        <h1 class="text-center">Return Form</h1>
         <form method="POST" action="">
             <div class="form-group">
                 <label for="user_id">User ID:</label>
@@ -23,8 +54,8 @@
                 <input type="text" class="form-control" id="Product_Name" name="Product_Name" value="{{ product.Product_Name }}" readonly>
             </div>
             <div class="form-group">
-                <label for="reason">Reason of Return:</label>
-                <textarea class="form-control" id="reason" name="reason" required></textarea>
+                <label for="reason">Reason for Return:</label>
+                <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
             </div>
             <div class="form-group form-check">
                 <input type="checkbox" class="form-check-input" id="counterfeit" name="counterfeit">
