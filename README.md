@@ -9,10 +9,14 @@ Steps to run the project.
 ```
 pip install -r requirements.txt
 ```
-3. run app.py
-4. Go to localhost:5000 on your browser
-5. For seller login use: 'SE1' and 'test' as user ID and password.
-6. For user login use: 'U1' and 'test' as user ID and password.
+3. Then run app.py
+```
+  cd amazon-frontend
+  python -u app.py
+```   
+5. Go to localhost:5000 on your browser
+6. For seller login use: 'SE1' and 'test' as user ID and password.
+7. For user login use: 'U1' and 'test' as user ID and password.
 
 ![Screenshot 2024-06-23 234922](https://github.com/arnavbhambri/Want2Win_AmazonHackOn/assets/90908549/116af5b8-29b7-4ca1-b4ba-f9ece5c994dd)
 
