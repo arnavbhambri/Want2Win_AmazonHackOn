@@ -408,7 +408,7 @@ def generate_graph():
     df = pd.read_csv("csv/hotspots.csv")
     df = df[df['Weight'] > 50]
 
-    df_desc = pd.read_csv("csv/location_database1.csv")
+    df_desc = pd.read_csv("csv/location_database.csv")
     df = df[df['Weight'] > 50]
 
     G = nx.Graph()  
