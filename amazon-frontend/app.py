@@ -94,7 +94,7 @@ def register2():
         else:
             new_seller = pd.DataFrame({'Seller_ID': [seller_id], 'Password': [password]})
             seller_data = pd.concat([seller_data, new_seller], ignore_index=True)
-            seller_data.to_csv('seller_auth.csv', index=False)
+            seller_data.to_csv('csv/seller_auth.csv', index=False)
             flash('Registration successful, please log in')
             return redirect(url_for('login2'))
     return render_template('register2.html')
