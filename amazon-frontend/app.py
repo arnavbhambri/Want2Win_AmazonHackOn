@@ -161,7 +161,7 @@ def product_registration():
             })
             
             product_data = pd.concat([product_data, new_product], ignore_index=True)
-            product_data.to_csv("seller_database.csv", index=False)
+            product_data.to_csv("csv/seller_database.csv", index=False)
             
             flash('Product registered successfully')
             return redirect(url_for('products2'))
