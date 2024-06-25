@@ -426,17 +426,24 @@ def generate_graph():
         finals[item[0]] = (location, item[1])
 
     check_list = [item for item in finals]
-    net = Network(notebook=True)  
+    net = Network(notebook=True)
+    source = "W63"
+    dest = "W27"
+    path_d = nx.shortest_path(G, source, dest, weight='weight', method='dijkstra')
 
     for node in G.nodes():
+        if node in path_d:
+            net.add_node(node, label=node, size=weighted_degrees[node]* 0.0178, color='#86BC25')
         if(node in check_list):
-            print(node)
             net.add_node(node, label=node, size=weighted_degrees[node] * 0.0178, color='#f80000', title= finals[node] )
         else:
             net.add_node(node, label=node, size=weighted_degrees[node] * 0.0178, color='#FFA500')  
 
     for edge in G.edges(data=True):
-        net.add_edge(edge[0], edge[1], value=edge[2]['weight'], color='#808080')  
+        if(set([edge[0], edge[1]]).issubset(path_d)):
+            net.add_edge(edge[0], edge[1], value=edge[2]['weight'], color='#808080')
+        else:
+            net.add_edge(edge[0], edge[1], value=edge[2]['weight'], color='#ADD8E6')  
 
     net.set_options("""
     var options = {
