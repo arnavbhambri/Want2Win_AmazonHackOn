@@ -104,6 +104,10 @@
                 <input type="text" class="form-control" id="category" name="category" required>
             </div>
             <div class="form-group">
+                <label for="dimensions">Dimensions</label>
+                <input type="text" class="form-control" id="dimensions" name="dimensions" placeholder="e.g., 10x5x2" required>
+            </div>
+            <div class="form-group">
                 <label for="discounted_price">Discounted Price</label>
                 <input type="text" class="form-control" id="discounted_price" name="discounted_price" required>
             </div>
@@ -130,10 +134,16 @@
         $(document).ready(function() {
             $('#checkSimilarity').click(function() {
                 var aboutProduct = $('#about_product').val();
+                var dimensions = $('#dimensions').val();
+                var productName = $('#product_name').val();
                 $.ajax({
                     url: '/check_similarity',
                     method: 'POST',
-                    data: { about_product: aboutProduct },
+                    data: {
+                        about_product: aboutProduct,
+                        dimensions: dimensions,
+                        product_name: productName
+                    },
                     success: function(response) {
                         $('#similarityResult').html(response.result.replace(/\n/g, '<br>'));
                         if (!response.is_too_similar) {

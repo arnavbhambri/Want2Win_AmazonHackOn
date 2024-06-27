@@ -8,9 +8,42 @@ from sentence_transformers import SentenceTransformer, util
 import pandas as pd
 import networkx as nx
 from pyvis.network import Network
- 
+import pandas as pd
+import networkx as nx
+from datetime import datetime
+from collections import defaultdict
+import numpy as np
+import pandas as pd
+import numpy as np
+import pickle
+from sklearn.metrics.pairwise import cosine_similarity
+import re
+import torch
+from create_graph import getnet
+from sentence_transformers import SentenceTransformer, util
+
 app = Flask(__name__)
 app.secret_key = 'skey'
+
+MODEL_FILE = 'model/sbert_model.pkl'
+EMBEDDINGS_FILE = 'model/product_embeddings.pkl'
+df = pd.read_csv('csv/updated_product_database.csv')
+with open(MODEL_FILE, 'rb') as f:
+    title_model = pickle.load(f)
+with open(EMBEDDINGS_FILE, 'rb') as f:
+    product_embeddings = pickle.load(f)
+# Load the description similarity model
+model_save_path = "model/paraphrase-MiniLM-L6-v2-model.pth"
+desc_model = torch.load(model_save_path,map_location=torch.device('cpu'))
+
+@app.template_filter('truncate')
+def truncate(s, length=200):
+    if len(s) <= length:
+        return s
+    return s[:length] + '...'
+
+# Register the filter
+app.jinja_env.filters['truncate'] = truncate
 
 loaded_model = torch.jit.load('model/model2_scripted.pth')
 
@@ -23,44 +56,61 @@ shipments_df = pd.read_csv('csv/shipment_database1.csv')
 status_df = pd.read_csv('csv/shipment_status_database1.csv')
 users_df = pd.read_csv('csv/user_database_normalized.csv')
 hotspots_df = pd.read_csv('csv/hotspots.csv')
-model_save_path2 = "model/paraphrase-MiniLM-L6-v2-model.pth"
-model2 = torch.load(model_save_path2, map_location=torch.device('cpu'))
 
 # Load your dataset
-ama = pd.read_csv('csv/product_database.csv')
-descriptions = ama['About_Product'].tolist()
 
 # Encode all existing descriptions
-embeddings = model2.encode(descriptions, convert_to_tensor=True)
-
 def get_seller_data():
     return pd.read_csv('csv/seller_auth.csv')
 
 def get_product_data():
     return pd.read_csv('csv/seller_database.csv')
 
-def calculate_similarity(new_description, embeddings, model2):
-    new_embedding = model2.encode(new_description, convert_to_tensor=True)
-    similarity_scores = util.pytorch_cos_sim(new_embedding, embeddings)
-    return similarity_scores
+@app.route('/products3', methods=['GET', 'POST'])
+def products3():
+    if 'seller_id' not in session:
+        flash('Please log in to view products')
+        return redirect(url_for('login2'))
 
-def check_similarity(new_description, threshold=0.8):
-    similarity_scores = calculate_similarity(new_description, embeddings, model2)
-    is_too_similar = (similarity_scores > threshold).any().item()
+    seller_id = session['seller_id']
+    product_data = get_product_data()
 
-    result = f"Is the new description too similar? {'Yes' if is_too_similar else 'No'}\n"
+    if request.method == 'POST':
+        search_value = request.form.get('search_value', '').lower()
+        product_data = product_data[
+            product_data['Product_Name'].str.lower().str.contains(search_value) |
+            product_data['Category'].str.lower().str.contains(search_value) |
+            product_data['About_Product'].str.lower().str.contains(search_value)
+        ]
 
-    most_similar_index = similarity_scores.argmax().item()
-    most_similar_score = similarity_scores[0, most_similar_index].item()
+    return render_template('products3.html', products=product_data.to_dict('records'))
 
-    if most_similar_index < len(descriptions):
-        most_similar_description = descriptions[most_similar_index]
-        result += f"Most similar description: {most_similar_description}\n"
-        result += f"Similarity score with the most similar description: {most_similar_score:.2f}"
-    else:
-        result += "Error: Most similar index is out of range."
+@app.route('/add_to_catalog/<int:product_id>', methods=['GET', 'POST'])
+def add_to_catalog(product_id):
+    if 'seller_id' not in session:
+        flash('Please log in to add products to your catalog')
+        return redirect(url_for('login2'))
 
-    return result, is_too_similar
+    product_data = get_product_data()
+    product = product_data[product_data['Product_ID'] == product_id].iloc[0]
+
+    if request.method == 'POST':
+        discounted_price = request.form['discounted_price']
+        about_product = request.form['about_product']
+        to=pd.read_csv('csv/seller_database.csv')
+        we=to[to['Product_ID']==product_id]
+        we['About_Product']=about_product
+        we['Discounted_Price']=discounted_price
+        seller_id = session['seller_id']
+        we['Seller_ID']=seller_id
+        we["Reg_ID"]=len(to)+1
+        to = to._append(we,ignore_index=True)
+        to.save_csv('csv/seller_database.csv')
+        # Logic to add product to the seller's catalog with updated details
+        flash(f'Product {product_id} added to your catalog with new details!')
+        return redirect(url_for('products2'))
+
+    return render_template('add_to_catalog.html', product=product)
 
 @app.route('/seller_login')
 def seller_login():
@@ -173,16 +223,54 @@ def product_registration():
 
 @app.route('/check_similarity', methods=['POST'])
 def check_similarity_route():
+    descriptions = df['About_Product'].tolist()
     new_description = request.form['about_product']
-    result, is_too_similar = check_similarity(new_description)
-    return jsonify({'result': result, 'is_too_similar': is_too_similar})
+    dimensions = request.form['dimensions']
+    product_name = request.form['product_name']
+    def find_similar_titles(input_title, top_n=50):
+        input_embedding = title_model.encode([input_title])
+        similarities = cosine_similarity(input_embedding, product_embeddings)[0]
+        top_indices = np.argsort(similarities)[-top_n:][::-1]
+        return df.iloc[top_indices]
+    def parse_dimensions(dimension_string):
+        match = re.match(r'(\d+)x(\d+)x(\d+)', dimension_string)
+        return tuple(map(int, match.groups())) if match else None
 
-def get_next_return_id():
-    if os.path.exists('csv/return_complaints.csv'):
-        df = pd.read_csv('csv/return_complaints.csv')
-        return f"R{len(df) + 1}"
+    def similarity(dim1, dim2, threshold=2):
+        return all(abs(d1 - d2) <= threshold for d1, d2 in zip(dim1, dim2))
+
+    def find_similar_products(products, target_dims, threshold=2):
+        similar_products = []
+        for _, product in products.iterrows():
+            dims = parse_dimensions(product['Dimensions'])
+            if dims and similarity(dims, target_dims, threshold):
+                similar_products.append(product)
+        return pd.DataFrame(similar_products)
+    def calculate_similarity(new_description, embeddings, model2):
+        new_embedding = model2.encode(new_description, convert_to_tensor=True)
+        similarity_scores = util.pytorch_cos_sim(new_embedding, embeddings)
+        return similarity_scores
+    similar_titles = find_similar_titles(product_name)
+    target_dims = parse_dimensions(dimensions)
+    if not target_dims:
+        print("Invalid dimension format. Please use the format LxWxH (e.g., 10x5x2).")
+    similar_products = find_similar_products(similar_titles, target_dims)
+    embeddings2 = desc_model.encode(similar_products['About_Product'].tolist(), convert_to_tensor=True)
+    similarity_scores = calculate_similarity(new_description, embeddings2, desc_model)
+    is_too_similar = (similarity_scores > 0.7).any().item()
+
+    result = f"Is the new description too similar? {'Yes' if is_too_similar else 'No'}\n"
+
+    most_similar_index = similarity_scores.argmax().item()
+    most_similar_score = similarity_scores[0, most_similar_index].item()
+    simp=similar_products['About_Product'].tolist()
+    if most_similar_index < len(similar_products):
+        most_similar_description = simp[most_similar_index]
+        result += f"Most similar description: {most_similar_description}\n"
+        result += f"Similarity score with the most similar description: {most_similar_score:.2f}"
     else:
-        return "R1" 
+        result += "Error: Most similar index is out of range."
+    return jsonify({'result': result, 'is_too_similar': is_too_similar})
 
 def predict_statement(statement, vectorizer):
     # Preprocess the input statement
@@ -351,12 +439,10 @@ def process_return(user_id, shipment_id,product_id, reason, counterfeit):
         return "Invalid user"
 
         # Check if shipment_id and product_id correspond
-    matching_orders = shipments_df[
-        (shipments_df['Shipment_ID'].astype(str) == shipment_id) & 
-        (shipments_df['Product_ID'].astype(str) == product_id)
-    ]
+    matching_orders = shipments_df[(shipments_df['Shipment_ID'].astype(str) == shipment_id)]
         
     if matching_orders.empty:
+        print(f"{product_id}")
         return f"Invalid order entered. Shipment ID: {shipment_id}, Product ID: {product_id}"
 
         # If we've reached this point, the user and order are valid
@@ -375,105 +461,88 @@ def process_return(user_id, shipment_id,product_id, reason, counterfeit):
         (hotspots_df['H2'].astype(str) == str(warehouse_id))
     ]['Weight'].values
 
+    hot=hotspots_df['Weight'].values
     hotspot_weight = hotspot_weights.mean() if len(hotspot_weights) > 0 else 0
+    hotspot_weightm = max(hot)
+    hotspot_weightma = min(hot)
+    htp = (hotspot_weight - hotspot_weightma) / (hotspot_weightm - hotspot_weightma)
 
         # Determine counterfeit status
-    if counterfeit_score < 0.3 and user_legitimacy < 0.3 and hotspot_weight < 30:
-        status = "Not Counterfeit"
-    elif counterfeit_score > 0.7 or user_legitimacy > 0.5 or hotspot_weight > 50:
-        status = "Definitely Counterfeit"
+    sas=1-user_legitimacy
+    if counterfeit and user_legitimacy>=0.8:
+        status=1
+    elif counterfeit and user_legitimacy<=0.2:
+        status=0.1
+    elif counterfeit:
+        status=user_legitimacy*0.666+htp*0.333
     else:
-        status = "Could be Counterfeit"
-    if counterfeit and user_legitimacy>0.5:
-        status="Definitely Counterfeit"
+        status=user_legitimacy*0.20+ htp*0.40
         # Add to return_complaints.csv
-    return_id = get_next_return_id()
-    new_return = pd.DataFrame({
-        'Return_ID': [return_id],
-        'User_ID': [user_id],
-        'Shipment_ID': [shipment_id],
-        'Product_ID': [product_id],
-        'Reason_Of_Return': [reason],
-        'Status': [status]
-    })
-
-    if os.path.exists('csv/return_complaints.csv'):
-        new_return.to_csv('csv/return_complaints.csv', mode='a', header=False, index=False)
-    else:
-        new_return.to_csv('csv/return_complaints.csv', index=False)
+    status_df.loc[status_df['Shipment_ID'].astype(str) == shipment_id, 'Counterfeit_Score'] = status 
+    status_df.loc[status_df['Shipment_ID'].astype(str) == shipment_id, 'Return_Initiated'] = True
+    status_df.to_csv('csv/shipment_status_database1.csv')
     return "Report submitted successfully"
 
 @app.route('/generate_graph')
 def generate_graph():
-    df = pd.read_csv("csv/hotspots.csv")
-    df = df[df['Weight'] > 50]
-
-    df_desc = pd.read_csv("csv/location_database.csv")
-    df = df[df['Weight'] > 50]
-
-    G = nx.Graph()  
-
-    for idx, row in df.iterrows():
-        G.add_edge(row['H1'], row['H2'], weight=row['Weight'])
-
-    net = Network(notebook=True)
-
-    weighted_degrees = dict(G.degree(weight='weight'))
-    top_list = sorted(weighted_degrees.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)[:10]
-    finals = {}
-    for item in top_list:
-        location = df_desc.loc[df_desc['Warehouse_ID'] == item[0], 'Warehouse_Location'].values[0]
-        finals[item[0]] = (location, item[1])
-
-    check_list = [item for item in finals]
-    net = Network(notebook=True)
-    source = "W63"
-    dest = "W27"
-    path_d = nx.shortest_path(G, source, dest, weight='weight', method='dijkstra')
-
-    for node in G.nodes():
-        if node in path_d:
-            net.add_node(node, label=node, size=weighted_degrees[node]* 0.0178, color='#86BC25')
-        if(node in check_list):
-            net.add_node(node, label=node, size=weighted_degrees[node] * 0.0178, color='#f80000', title= finals[node] )
-        else:
-            net.add_node(node, label=node, size=weighted_degrees[node] * 0.0178, color='#FFA500')  
-
-    for edge in G.edges(data=True):
-        if(set([edge[0], edge[1]]).issubset(path_d)):
-            net.add_edge(edge[0], edge[1], value=edge[2]['weight'], color='#808080')
-        else:
-            net.add_edge(edge[0], edge[1], value=edge[2]['weight'], color='#ADD8E6')  
-
-    net.set_options("""
-    var options = {
-  "nodes": {
-    "font": {
-      "size": 16,
-      "align": "center"
-    }
-  },
-  "edges": {
-    "color": {
-      "inherit": true
-    },
-    "smooth": {
-      "type": "continuous"
-    }
-  },
-  "physics": {
-    "minVelocity": 0.75
-  }
-}
-""")
-    # Generate HTML content for the graph
+    #Code for reporting first
+    #products
+    im=pd.read_csv('csv/shipment_status_database1.csv')
+    ship=pd.read_csv('csv/shipment_database1.csv')
+    to=pd.read_csv('csv/seller_database.csv')
+    prod=pd.read_csv('csv/product_database.csv')
+    sh2=ship[['Shipment_ID','Seller_ID']]
+    sh3=ship[['Shipment_ID','Product_ID']]
+    pdt=pd.merge(im,sh3,how='inner',on='Shipment_ID')
+    cnt={}
+    for ind in pdt.index:
+        if pdt['Counterfeit_Score'][ind]>0.70:
+            seller=pdt['Product_ID'][ind]
+            if seller not in cnt:
+                cnt[seller]=1
+            else:
+                cnt[seller]+=1
+    for i in cnt:
+        lent=pdt['Product_ID'].value_counts().get(i, 0)
+        nt=cnt[i]/lent
+        y=round(nt*100,2)
+        cnt[i]=y
+    keys = list(cnt.keys())
+    values = list(cnt.values())
+    sorted_value_index = np.argsort(values)
+    sorted_value_index=np.flip(sorted_value_index)
+    sorted_dict = {keys[i]: values[i] for i in sorted_value_index}
+    product_percentages = dict(list(sorted_dict.items())[:10])
+    #sellers
+    pdx=pd.merge(im,sh2,how='inner',on='Shipment_ID')
+    cnt={}
+    for ind in pdx.index:
+        if pdx['Counterfeit_Score'][ind]>0.70:
+            seller=pdx['Seller_ID'][ind]
+            if seller not in cnt:
+                cnt[seller]=1
+            else:
+                cnt[seller]+=1
+    for i in cnt:
+        lent=pdx['Seller_ID'].value_counts().get(i, 0)
+        nt=cnt[i]/lent
+        y=round(nt*100,2)
+        cnt[i]=y
+    keys = list(cnt.keys())
+    values = list(cnt.values())
+    sorted_value_index = np.argsort(values)
+    sorted_value_index=np.flip(sorted_value_index)
+    sorted_dict = {keys[i]: values[i] for i in sorted_value_index}
+    seller_percentages = dict(list(sorted_dict.items())[:10])
+    #Code for graph- refer create_graph.py
+    net = getnet()
     graph_html = net.generate_html()
-     
+
     graph_with_title = f"""
-    <h2 style="text-align: center;">Top 10 Counterfeiting Hotspots</h2>
+    <h2 style="text-align: center;">Counterfeiting Hotspots</h2>
     {graph_html}
     """
-    return render_template('show_graph.html', graph_html=graph_with_title)
+    return render_template('show_graph.html', graph_html=graph_with_title, seller_percentages=seller_percentages, product_percentages=product_percentages)
 
 
 if __name__ == '__main__':

@@ -104,7 +104,7 @@
                     <img src="{{ product.Img_Link }}" class="card-img-top" alt="{{ product.Product_Name }}">
                     <div class="card-body">
                         <h5 class="card-title">{{ product.Product_Name }}</h5>
-                        <p class="card-text">{{ product.About_Product }}</p>
+                        <p class="card-text">{{ product.About_Product | truncate(200) }}</p>
                         <p class="card-text"><strong>Category:</strong> {{ product.Category }}</p>
                         <p class="card-text"><strong>Price:</strong> {{ product.Discounted_Price }} ({{ product.Actual_Price }})</p>
                         <p class="card-text"><strong>Discount:</strong> {{ product.Discount_Percentage }}</p>

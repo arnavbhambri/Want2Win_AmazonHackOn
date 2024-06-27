@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add to Catalog</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background: url('https://source.unsplash.com/1600x900/?catalog') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+        }
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.7) !important;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #f90 !important;
+        }
+        .navbar-nav .nav-link {
+            color: #fff !important;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #f90 !important;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h2 {
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            color: #f90;
+        }
+        .form-group label {
+            color: #f90;
+        }
+        .btn-primary {
+            background-color: #f90;
+            border-color: #f90;
+        }
+        .btn-primary:hover {
+            background-color: #fff;
+            color: #f90;
+        }
+        .form-control {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand" href="#">Amazon Clone</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/register">Register</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/products2">Products</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2 class="text-center">Add Product to Catalog</h2>
+        <form action="{{ url_for('add_to_catalog', product_id=product.Product_ID) }}" method="POST" class="mt-4">
+            <div class="form-group">
+                <label for="product_id">Product ID</label>
+                <input type="text" class="form-control" id="product_id" name="product_id" value="{{ product.Product_ID }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="product_name">Product Name</label>
+                <input type="text" class="form-control" id="product_name" name="product_name" value="{{ product.Product_Name }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="price">Price</label>
+                <input type="text" class="form-control" id="price" name="price" value="{{product.Actual_Price}}">
+            </div>
+            <div class="form-group">
+                <label for="discounted_price">Discounted Price</label>
+                <input type="text" class="form-control" id="discounted_price" name="discounted_price" placeholder="Enter discounted price">
+            </div>
+            <div class="form-group">
+                <label for="about_product">About Product</label>
+                <textarea class="form-control" id="about_product" name="about_product" rows="3" placeholder="Enter product description"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add to Catalog</button>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Products</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background: url('https://source.unsplash.com/1600x900/?products') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+        }
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.7) !important;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #f90 !important;
+        }
+        .navbar-nav .nav-link {
+            color: #fff !important;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #f90 !important;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h2 {
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            color: #f90;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+        }
+        .card-title, .card-text {
+            color: #000;
+        }
+        .btn-primary {
+            background-color: #f90;
+            border-color: #f90;
+        }
+        .btn-danger {
+            background-color: #d9534f;
+            border-color: #d9534f;
+        }
+        .btn-primary:hover, .btn-danger:hover {
+            background-color: #fff;
+            color: #f90;
+        }
+        .input-group .form-control {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+        }
+        .input-group .btn-secondary {
+            background: rgba(0, 0, 0, 0.8);
+            border: none;
+        }
+        .input-group .btn-secondary:hover {
+            background: #f90;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand" href="#">Amazon Clone</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Logout</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/register">Register</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/products2">Products</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2 class="text-center">Seller Products</h2>
+        <form action="{{ url_for('products3') }}" method="POST" class="mb-5">
+            <div class="input-group">
+                <input type="text" name="search_value" class="form-control" placeholder="Search for products">
+                <div class="input-group-append">
+                    <button class="btn btn-secondary" type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+        <div class="row mt-4">
+            {% for product in products %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img src="{{ product.Img_Link }}" class="card-img-top" alt="{{ product.Product_Name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.Product_Name }}</h5>
+                        <p class="card-text">{{ product.About_Product }}</p>
+                        <p class="card-text"><strong>Category:</strong> {{ product.Category }}</p>
+                        <p class="card-text"><strong>Price:</strong> {{ product.Discounted_Price }} ({{ product.Actual_Price }})</p>
+                        <p class="card-text"><strong>Discount:</strong> {{ product.Discount_Percentage }}</p>
+                        <p class="card-text"><strong>Rating:</strong> {{ product.Rating }} ({{ product.Rating_Count }} reviews)</p>
+                        <a href="{{ url_for('add_to_catalog', product_id=product.Product_ID) }}" class="btn btn-primary">Add to Catalog</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
