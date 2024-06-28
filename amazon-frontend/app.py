@@ -105,7 +105,7 @@ def add_to_catalog(product_id):
         we['Seller_ID']=seller_id
         we["Reg_ID"]=len(to)+1
         to = to._append(we,ignore_index=True)
-        to.save_csv('csv/seller_database.csv')
+        to.to_csv('csv/seller_database.csv')
         # Logic to add product to the seller's catalog with updated details
         flash(f'Product {product_id} added to your catalog with new details!')
         return redirect(url_for('products2'))
